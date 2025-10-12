@@ -112,8 +112,8 @@ def modifycard():
 def reviewcard():
     pass
 
-def logout():
-    pass
+def logout(): #Ruby
+    menu()
 
     
 # ====================== UI ====================== #Ruby
