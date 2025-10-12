@@ -1,6 +1,8 @@
 import psycopg2
 from datetime import datetime
 
+import time
+
 #Change Username and password!
 def get_connection():
     return psycopg2.connect(
@@ -91,6 +93,8 @@ def menu():
         elif choice == "2":
             login()
         elif choice == "3":
+            print("Have Good Time :)")
+            time.sleep(1.0)
             exit()
         else:
             print("❌ Invalid choice!")
