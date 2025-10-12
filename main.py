@@ -13,24 +13,36 @@ def get_connection():
         port="5432"
     )
 
-#==================== Login Panel ===============
+#==================== Login Panel =============== # Ruby
 def register():
+    conn = get_connection()
+    cur = conn.cursor()
+
     while True:
         username = input("Please enter your username to register: ")
+
+        cur.execute("SELECT 1 FROM users WHERE username = %s;", (username,))
+        if cur.fetchone():
+            print("Username already exists! Please choose a different one.")
+            continue  
+        else:
+            break 
+
+    while True:
         password = input("Please enter your password: ")
         confirm_password = input("Please confirm your password: ")
 
         if password != confirm_password:
             print("Passwords do not match! Try again.")
-            continue 
-        break
+            continue
+        else:
+            break
 
-    conn = None
     try:
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("INSERT INTO users(username, password_hash) VALUES(%s, %s);",
-                    (username, password))
+        cur.execute(
+            "INSERT INTO users(username, password_hash) VALUES(%s, %s);",
+            (username, password)
+        )
         conn.commit()
         print("User registered successfully!")
     except Exception as e:
@@ -38,9 +50,35 @@ def register():
     finally:
         if conn:
             conn.close()
+        
+    #=============== It doesn’t check if the username already exists, so it gives an error. Ruby
+    # while True:
+    #     username = input("Please enter your username to register: ")
+
+    #     password = input("Please enter your password: ")
+    #     confirm_password = input("Please confirm your password: ")
+
+    #     if password != confirm_password:
+    #         print("Passwords do not match! Try again.")
+    #         continue 
+    #     break
+
+    # conn = None
+    # try:
+    #     conn = get_connection()
+    #     cur = conn.cursor()
+    #     cur.execute("INSERT INTO users(username, password_hash) VALUES(%s, %s);",
+    #                 (username, password))
+    #     conn.commit()
+    #     print("User registered successfully!")
+    # except Exception as e:
+    #     print(f"User registration failed! Error: {e}")
+    # finally:
+    #     if conn:
+    #         conn.close()
 
         
-def login():
+def login(): # Ruby
     username = input("Please enter your username: ")
     password = input("Please enter your password: ")
 
@@ -78,7 +116,7 @@ def logout():
     pass
 
     
-# ====================== UI ======================
+# ====================== UI ====================== #Ruby
 def menu():
      while True:
         print("\n--- 📋 Welcom To Login Pannel---")
