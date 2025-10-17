@@ -1,7 +1,11 @@
 import psycopg2
-from datetime import datetime
+from datetime import date, timedelta
 
 import time
+import os
+
+current_user_id = None
+current_box_id = None
 
 #Change Username and password!
 def get_connection():
@@ -40,8 +44,13 @@ def register():
 
     try:
         cur.execute(
-            "INSERT INTO users(username, password_hash) VALUES(%s, %s);",
+            "INSERT INTO users(username, password_hash) VALUES(%s, %s) RETURNING id;",
             (username, password)
+        )
+        user_id = cur.fetchone()[0]
+        cur.execute(
+            "INSERT INTO leitner_boxes(user_id, title) VALUES(%s, %s);",
+            (user_id, "Main Box")
         )
         conn.commit()
         print("User registered successfully!")
@@ -79,6 +88,8 @@ def register():
 
         
 def login(): # Ruby
+    global current_user_id, current_box_id
+    
     username = input("Please enter your username: ")
     password = input("Please enter your password: ")
 
@@ -86,9 +97,16 @@ def login(): # Ruby
     try:
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE username=%s AND password_hash=%s LIMIT 1;", (username, password))
+        cur.execute("""
+            SELECT u.id, b.id
+            FROM users u
+            JOIN leitner_boxes b ON u.id = b.user_id
+            WHERE u.username = %s AND u.password_hash = %s
+            LIMIT 1;
+        """, (username, password))
         user = cur.fetchone()
         if user:
+            current_user_id, current_box_id = user
             print(f"✅ Welcome back, {username}!")
             dashbord()
         else:
@@ -109,16 +127,100 @@ def addcard():
 def modifycard():
     pass
 
+def calculate_next_review(slot):
+    """Calculate next review date based on Leitner slot rules."""
+    intervals = {1: 1, 2: 3, 3: 7, 4: 14, 5: 30, 6: 36500}
+    return date.today() + timedelta(days=intervals[slot])
+
 def reviewcard():
-    pass
+    """
+    Review Card feature:
+    - User selects a slot (1-6) by desire.
+    - A random card from that slot is shown.
+    - User reveals answer with Enter.
+    - If "Yes": move to next slot (max 6)
+    - If "No": stay in current slot
+    - Also logs review in 'reviews' table.
+    """
+    global current_box_id
+
+    try:
+        slot = int(input("Select a slot to review (1-6): "))
+        if not (1 <= slot <= 6):
+            print("❌ Invalid slot number!")
+            input("Press Enter to continue...")
+            return
+    except ValueError:
+        print("❌ Please enter a number between 1 and 6.")
+        input("Press Enter to continue...")
+        return
+
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT id, question, answer 
+            FROM cards 
+            WHERE box_id = %s AND current_slot = %s
+            ORDER BY RANDOM() 
+            LIMIT 1
+        """, (current_box_id, slot))
+        card = cur.fetchone()
+
+        if not card:
+            print(f"📭 No cards in Slot {slot}.")
+            input("Press Enter to continue...")
+            return
+
+        card_id, question, answer = card
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print(f"\n❓ Question: {question}")
+        input("Press Enter to reveal the answer...")
+        print(f"✅ Answer: {answer}\n")
+
+        response = input("Did you learn this card? (y/n): ").strip().lower()
+        learned = response in ('y', 'yes')
+
+        if learned:
+            new_slot = min(slot + 1, 6)
+            print(f"→ Card moved to Slot {new_slot}!")
+        else:
+            new_slot = slot
+            print("→ Card remains in current slot.")
+
+        next_date = calculate_next_review(new_slot)
+        cur.execute("""
+            UPDATE cards 
+            SET current_slot = %s, next_review_date = %s 
+            WHERE id = %s
+        """, (new_slot, next_date, card_id))
+
+        cur.execute("""
+            INSERT INTO reviews (card_id, result) 
+            VALUES (%s, %s)
+        """, (card_id, learned))
+
+        conn.commit()
+        print("✅ Card and review logged successfully.")
+
+    except Exception as e:
+        print(f"❌ Error during review: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
+    input("Press Enter to return to Dashboard...")
 
 def logout(): #Ruby
+    global current_user_id, current_box_id
+    current_user_id = None
+    current_box_id = None
     menu()
 
     
 # ====================== UI ====================== #Ruby
 def menu():
-     while True:
+    while True:
         print("\n--- 📋 Welcom To Login Pannel---")
         print("1. Register")
         print("2. Login")
