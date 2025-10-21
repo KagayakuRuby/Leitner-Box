@@ -218,7 +218,7 @@ def create_category(self):
             )
             self.db.conn.commit()
             cur.close()
-            print("✅ Category created successfully!")
+            print(" Category created successfully! ✅")
         except Exception as e:
             print(f" Error creating category ❌: {e}")
 
@@ -257,7 +257,7 @@ def change_card_category(self, card_id):
             for cat_id, name in categories:
                 print(f" {cat_id}. {name}")
             
-            new_cat_id = int(input("New category ID: "))
+            new_cat_id = int(input("New category ID 📑: "))
             
             cur = self.db.conn.cursor()
             cur.execute(
@@ -279,7 +279,7 @@ def addcard():
     pass
 
 def show_user_cards(self):
-        """نمایش تمام کارت‌های کاربر"""
+        """show all user cards."""
         try:
             cursor = self.db.conn.cursor()
             cursor.execute(
@@ -301,7 +301,7 @@ def show_user_cards(self):
 def modifycard(self,card_id,current_user):
         """card edit menu."""
         try:
-        # ایجاد cursor مستقیم از connection
+        # creating direct connectin from the cursor
             conn = get_connection()
             cur = conn.cursor()
         
@@ -315,7 +315,7 @@ def modifycard(self,card_id,current_user):
                 print("✗ Card not found or you don't have permission")
                 return
         
-            cur.close() # بستن cursor
+            cur.close() #close cursor
             return card_exists
         
         except Exception as e:
@@ -340,7 +340,7 @@ def modifycard(self,card_id,current_user):
         try:
             card_id = int(input("\nEnter card ID to modify: "))
             
-            # بررسی وجود کارت و مالکیت
+            # checking card existence and ownership
             cursor = self.db.conn.cursor()
             cursor.execute(
                 "SELECT id FROM cards WHERE id = ? AND user_id = ?",
@@ -353,7 +353,7 @@ def modifycard(self,card_id,current_user):
                 time.sleep(2)
                 return
             
-            # نمایش اطلاعات فعلی کارت
+            # display current card information
             cursor.execute(
                 """SELECT c.question, c.answer, c.box, c.is_important, cat.name as category_name 
                 FROM cards c 
@@ -370,8 +370,8 @@ def modifycard(self,card_id,current_user):
             print(f"Important: {'Yes ⭐' if card_details['is_important'] else 'No'}")
             print(f"Category: {card_details['category_name']}")
             
-            # دریافت تغییرات
-            print("\nWhat would you like to modify?")
+            # receive changes
+            print("\nWhat would you like to modify? 🤔")
             print("1. 📝 Edit Question")
             print("2. ✅ Edit Answer") 
             print("3. 🏠 Change Box")
@@ -417,7 +417,7 @@ def modifycard(self,card_id,current_user):
                         "UPDATE cards SET box = ?, next_review = ? WHERE id = ?",
                         (new_box, next_review.strftime('%Y-%m-%d'), card_id)
                     )
-                    print(f"✅ Card moved to Box {new_box}!")
+                    print(f"✅ Card moved to Box  {new_box}!")
                 else:
                     print(" Box must be between 1 and 6! ❌")
             
@@ -445,7 +445,7 @@ def modifycard(self,card_id,current_user):
                         "UPDATE cards SET category_id = ? WHERE id = ?",
                         (new_category_id, card_id)
                     )
-                    print("✅ Category changed successfully!")
+                    print(" Category changed successfully! ✅")
                 else:
                     print(" No categories available! ❌")
             
@@ -512,7 +512,7 @@ def delete_card(self):
                 cursor.execute("DELETE FROM cards WHERE id = ?", (card_id,))
                 self.db.conn.commit()
                 cursor.close()
-                print("✅ Card deleted successfully!")
+                print(" Card deleted successfully! ✅")
             else:
                 print(" Deletion cancelled. ❌")
             
