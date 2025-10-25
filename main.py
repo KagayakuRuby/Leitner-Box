@@ -24,6 +24,8 @@ def register():
 
     while True:
         username = input("Please enter your username to register: ")
+        username = username.lower()
+        # print(username)
 
         cur.execute("SELECT 1 FROM users WHERE username = %s;", (username,))
         if cur.fetchone():
@@ -92,6 +94,8 @@ def login(): # Ruby
     
     username = input("Please enter your username: ")
     password = input("Please enter your password: ")
+
+    username = username.lower()
 
     conn = None
     try:
