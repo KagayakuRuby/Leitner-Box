@@ -118,11 +118,15 @@ def login(): # Ruby
         if user:
             current_user_id, current_box_id = user
             print(f"✅ Welcome back, {username}!")
+            time.sleep(2) 
+            clear_screen()
             dashbord()
         else:
             print("❌ Username or password is invalid!")
+            time.sleep(2) 
+            clear_screen()
     except Exception as e:
-        print("Username or Password is invalid!")
+        print(f"Login error: {e}")
         time.sleep(2)
         clear_screen()
     finally:
@@ -292,7 +296,6 @@ def modifycard():
     cur = conn.cursor()
     
     try:
-        # پیدا کردن box_id کاربر
         cur.execute("SELECT id FROM leitner_boxes WHERE user_id = %s", (current_user_id,))
         box_result = cur.fetchone()
         
@@ -302,7 +305,6 @@ def modifycard():
             
         box_id = box_result[0]
         
-        # انتخاب اسلات
         slot_choice = input("Enter slot number (1-6) to modify cards: ")
         if not slot_choice.isdigit() or not 1 <= int(slot_choice) <= 6:
             print("❌ Invalid slot number!")
@@ -310,7 +312,6 @@ def modifycard():
             
         slot_num = int(slot_choice)
         
-        # نمایش کارت‌های اسلات
         cur.execute("""
             SELECT id, question, answer FROM cards 
             WHERE box_id = %s AND current_slot = %s
@@ -327,15 +328,13 @@ def modifycard():
         for i, (card_id, question, answer) in enumerate(cards, 1):
             print(f"[{i}] - {question} :: {answer}")
         
-        # انتخاب کارت
         card_choice = input("\nEnter card number to modify: ")
         if not card_choice.isdigit() or not 1 <= int(card_choice) <= len(cards):
             print("❌ Invalid card number!")
             return
             
         card_id = cards[int(card_choice)-1][0]
-        
-        # انتخاب عمل
+
         print("\n1. ✏️ Edit Card")
         print("2. 🗑️ Delete Card")
         print("3. ↩️ Cancel")
@@ -343,7 +342,6 @@ def modifycard():
         action = input("Choose action: ")
         
         if action == "1":
-            # ویرایش کارت
             new_input = input('Enter new card info like: "New Question :: New Answer": ')
             if " :: " in new_input:
                 new_question, new_answer = new_input.split(" :: ", 1)
@@ -357,7 +355,6 @@ def modifycard():
                 print("❌ Invalid format!")
                 
         elif action == "2":
-            # حذف کارت
             confirm = input("Are you sure you want to delete this card? (y/n): ")
             if confirm.lower() == 'y':
                 cur.execute("DELETE FROM reviews WHERE card_id = %s", (card_id,))
@@ -400,10 +397,12 @@ def reviewcard():
         if not (1 <= slot <= 6):
             print("❌ Invalid slot number!")
             input("Press Enter to continue...")
+            clear_screen()
             return
     except ValueError:
         print("❌ Please enter a number between 1 and 6.")
         input("Press Enter to continue...")
+        clear_screen()
         return
 
     conn = get_connection()
@@ -421,10 +420,11 @@ def reviewcard():
         if not card:
             print(f"📭 No cards in Slot {slot}.")
             input("Press Enter to continue...")
+            clear_screen()
             return
 
         card_id, question, answer = card
-        os.system('cls' if os.name == 'nt' else 'clear')
+        clear_screen()
         print(f"\n❓ Question: {question}")
         input("Press Enter to reveal the answer...")
         print(f"✅ Answer: {answer}\n")
@@ -614,7 +614,8 @@ def dashbord():
         print("2. Add Card")
         print("3. Modify Card")
         print("4. Review Card")
-        print("5. Logout")
+        print("5. Show Statistics")
+        print("6. Logout")
 
         
         choice = input("Enter your choice: ")
@@ -636,4 +637,8 @@ def dashbord():
 
 
 if __name__ == "__main__":
+    clear_screen()
+    print("🎯 Welcome to Leitner Box System!")
+    time.sleep(1)
+    clear_screen()
     menu()
