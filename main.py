@@ -1,6 +1,6 @@
 import psycopg2
 from datetime import date, timedelta, datetime
-
+import getpass
 import time
 import os
 
@@ -12,7 +12,7 @@ def get_connection():
     return psycopg2.connect(
         dbname="leitnerbox",
         user="postgres",
-        password="138654",
+        password="123",
         host="localhost",
         port="5432"
     )
@@ -39,8 +39,8 @@ def register():
             break 
 
     while True:
-        password = input("Please enter your password: ")
-        confirm_password = input("Please confirm your password: ")
+        password = getpass.getpass("Please enter your password: ")
+        confirm_password = getpass.getpass("Please confirm your password: ")
 
         if password != confirm_password:
             print("Passwords do not match! Try again.")
@@ -99,7 +99,7 @@ def login(): # Ruby
     global current_user_id, current_box_id
     
     username = input("Please enter your username: ")
-    password = input("Please enter your password: ")
+    password = getpass.getpass("Please enter your password: ")
 
     username = username.lower()
 
